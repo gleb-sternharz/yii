@@ -85,9 +85,9 @@ class CCheckBoxColumn extends CGridColumn
 	 * <li>1 - only one row can be checked. Checking a checkbox has nothing to do with selecting the row</li>
 	 * <li>2 or more - multiple checkboxes can be checked. Checking a checkbox has nothing to do with selecting the row</li>
 	 * <li>null - {@link CGridView::selectableRows} is used to control how many checkboxes can be checked.
-	 * Cheking a checkbox will also select the row.</li>
+	 * Checking a checkbox will also select the row.</li>
 	 * </ul>
-	 * You may also call the JavaScript function <code>$.fn.yiiGridView.getChecked(containerID,columnID)</code>
+	 * You may also call the JavaScript function <code>$(gridID).yiiGridView.('getChecked', columnID)</code>
 	 * to retrieve the key values of the checked rows.
 	 * @since 1.1.6
 	 */
@@ -137,26 +137,26 @@ class CCheckBoxColumn extends CGridColumn
 		elseif($this->selectableRows==1)
 		{
 			//.. only one can be checked, uncheck all other
-			$cbcode="$(\"input:not(#\"+this.id+\")[name='$name']\").prop('checked',false);";
+			$cbcode="jQuery(\"input:not(#\"+this.id+\")[name='$name']\").prop('checked',false);";
 		}
 		elseif(strpos($this->headerTemplate,'{item}')!==false)
 		{
 			//.. process check/uncheck all
 			$cball=<<<CBALL
-$(document).on('click','#{$this->id}_all',function() {
+jQuery(document).on('click','#{$this->id}_all',function() {
 	var checked=this.checked;
-	$("input[name='$name']:enabled").each(function() {this.checked=checked;});
+	jQuery("input[name='$name']:enabled").each(function() {this.checked=checked;});
 });
 
 CBALL;
-			$cbcode="$('#{$this->id}_all').prop('checked', $(\"input[name='$name']\").length==$(\"input[name='$name']:checked\").length);";
+			$cbcode="jQuery('#{$this->id}_all').prop('checked', jQuery(\"input[name='$name']\").length==jQuery(\"input[name='$name']:checked\").length);";
 		}
 
 		if($cbcode!=='')
 		{
 			$js=$cball;
 			$js.=<<<EOD
-$(document).on('click', "input[name='$name']", function() {
+jQuery(document).on('click', "input[name='$name']", function() {
 	$cbcode
 });
 EOD;
@@ -180,7 +180,7 @@ EOD;
 		$item = '';
 		if($this->selectableRows===null && $this->grid->selectableRows>1)
 			$item = CHtml::checkBox($this->id.'_all',false,array('class'=>'select-on-check-all'));
-		else if($this->selectableRows>1)
+		elseif($this->selectableRows>1)
 			$item = CHtml::checkBox($this->id.'_all',false);
 		else
 		{
@@ -204,7 +204,7 @@ EOD;
 	{
 		if($this->value!==null)
 			$value=$this->evaluateExpression($this->value,array('data'=>$data,'row'=>$row));
-		else if($this->name!==null)
+		elseif($this->name!==null)
 			$value=CHtml::value($data,$this->name);
 		else
 			$value=$this->grid->dataProvider->keys[$row];

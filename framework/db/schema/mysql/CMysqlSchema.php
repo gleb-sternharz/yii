@@ -132,7 +132,7 @@ class CMysqlSchema extends CDbSchema
 	 */
 	protected function resolveTableNames($table,$name)
 	{
-		$parts=explode('.',str_replace('`','',$name));
+		$parts=explode('.',str_replace(array('`','"'),'',$name));
 		if(isset($parts[1]))
 		{
 			$table->schemaName=$parts[0];
@@ -170,7 +170,7 @@ class CMysqlSchema extends CDbSchema
 			{
 				if($table->primaryKey===null)
 					$table->primaryKey=$c->name;
-				else if(is_string($table->primaryKey))
+				elseif(is_string($table->primaryKey))
 					$table->primaryKey=array($table->primaryKey,$c->name);
 				else
 					$table->primaryKey[]=$c->name;
@@ -228,11 +228,11 @@ class CMysqlSchema extends CDbSchema
 		}
 		foreach($matches as $match)
 		{
-			$keys=array_map('trim',explode(',',str_replace('`','',$match[1])));
-			$fks=array_map('trim',explode(',',str_replace('`','',$match[3])));
+			$keys=array_map('trim',explode(',',str_replace(array('`','"'),'',$match[1])));
+			$fks=array_map('trim',explode(',',str_replace(array('`','"'),'',$match[3])));
 			foreach($keys as $k=>$name)
 			{
-				$table->foreignKeys[$name]=array(str_replace('`','',$match[2]),$fks[$k]);
+				$table->foreignKeys[$name]=array(str_replace(array('`','"'),'',$match[2]),$fks[$k]);
 				if(isset($table->columns[$name]))
 					$table->columns[$name]->isForeignKey=true;
 			}
@@ -287,7 +287,7 @@ class CMysqlSchema extends CDbSchema
 			$row=array_values($row);
 			$sql=$row[1];
 		}
-		if(preg_match_all('/^\s*`(.*?)`\s+(.*?),?$/m',$sql,$matches))
+		if(preg_match_all('/^\s*[`"](.*?)[`"]\s+(.*?),?$/m',$sql,$matches))
 		{
 			foreach($matches[1] as $i=>$c)
 			{
@@ -316,5 +316,19 @@ class CMysqlSchema extends CDbSchema
 	{
 		return 'ALTER TABLE '.$this->quoteTableName($table)
 			.' DROP FOREIGN KEY '.$this->quoteColumnName($name);
+	}
+
+
+	/**
+	 * Builds a SQL statement for removing a primary key constraint to an existing table.
+	 * @param string $name the name of the primary key constraint to be removed.
+	 * @param string $table the table that the primary key constraint will be removed from.
+	 * @return string the SQL statement for removing a primary key constraint from an existing table.
+	 * @since 1.1.13
+	 */
+	public function dropPrimaryKey($name,$table)
+	{
+		return 'ALTER TABLE ' . $this->quoteTableName($table) . ' DROP PRIMARY KEY';
+
 	}
 }

@@ -194,51 +194,37 @@ class CAssetManager extends CApplicationComponent
 			$forceCopy=$this->forceCopy;
 		if(isset($this->_published[$path]))
 			return $this->_published[$path];
-		else if(($src=realpath($path))!==false)
+		elseif(($src=realpath($path))!==false)
 		{
+			$dir=$this->generatePath($src,$hashByName);
+			$dstDir=$this->getBasePath().DIRECTORY_SEPARATOR.$dir;
 			if(is_file($src))
 			{
-				$dir=$this->hash($hashByName ? basename($src) : dirname($src).filemtime($src));
 				$fileName=basename($src);
-				$dstDir=$this->getBasePath().DIRECTORY_SEPARATOR.$dir;
 				$dstFile=$dstDir.DIRECTORY_SEPARATOR.$fileName;
 
-				if($this->linkAssets)
+				if(!is_dir($dstDir))
 				{
-					if(!is_file($dstFile))
-					{
-						if(!is_dir($dstDir))
-						{
-							mkdir($dstDir);
-							@chmod($dstDir, $this->newDirMode);
-						}
-						symlink($src,$dstFile);
-					}
+					mkdir($dstDir,$this->newDirMode,true);
+					chmod($dstDir,$this->newDirMode);
 				}
-				else if(@filemtime($dstFile)<@filemtime($src))
+
+				if($this->linkAssets && !is_file($dstFile)) symlink($src,$dstFile);
+				elseif(@filemtime($dstFile)<@filemtime($src))
 				{
-					if(!is_dir($dstDir))
-					{
-						mkdir($dstDir);
-						@chmod($dstDir, $this->newDirMode);
-					}
 					copy($src,$dstFile);
-					@chmod($dstFile, $this->newFileMode);
+					chmod($dstFile,$this->newFileMode);
 				}
 
 				return $this->_published[$path]=$this->getBaseUrl()."/$dir/$fileName";
 			}
-			else if(is_dir($src))
+			elseif(is_dir($src))
 			{
-				$dir=$this->hash($hashByName ? basename($src) : $src.filemtime($src));
-				$dstDir=$this->getBasePath().DIRECTORY_SEPARATOR.$dir;
-
-				if($this->linkAssets)
+				if($this->linkAssets && !is_dir($dstDir))
 				{
-					if(!is_dir($dstDir))
-						symlink($src,$dstDir);
+					symlink($src,$dstDir);
 				}
-				else if(!is_dir($dstDir) || $forceCopy)
+				elseif(!is_dir($dstDir) || $forceCopy)
 				{
 					CFileHelper::copyDirectory($src,$dstDir,array(
 						'exclude'=>$this->excludeFiles,
@@ -270,11 +256,8 @@ class CAssetManager extends CApplicationComponent
 	{
 		if(($path=realpath($path))!==false)
 		{
-			$base=$this->getBasePath().DIRECTORY_SEPARATOR;
-			if(is_file($path))
-				return $base . $this->hash($hashByName ? basename($path) : dirname($path).filemtime($path)) . DIRECTORY_SEPARATOR . basename($path);
-			else
-				return $base . $this->hash($hashByName ? basename($path) : $path.filemtime($path));
+			$base=$this->getBasePath().DIRECTORY_SEPARATOR.$this->generatePath($path,$hashByName);
+			return is_file($path) ? $base.DIRECTORY_SEPARATOR.basename($path) : $base ;
 		}
 		else
 			return false;
@@ -297,10 +280,8 @@ class CAssetManager extends CApplicationComponent
 			return $this->_published[$path];
 		if(($path=realpath($path))!==false)
 		{
-			if(is_file($path))
-				return $this->getBaseUrl().'/'.$this->hash($hashByName ? basename($path) : dirname($path).filemtime($path)).'/'.basename($path);
-			else
-				return $this->getBaseUrl().'/'.$this->hash($hashByName ? basename($path) : $path.filemtime($path));
+			$base=$this->getBaseUrl().'/'.$this->generatePath($path,$hashByName);
+			return is_file($path) ? $base.'/'.basename($path) : $base;
 		}
 		else
 			return false;
@@ -315,5 +296,22 @@ class CAssetManager extends CApplicationComponent
 	protected function hash($path)
 	{
 		return sprintf('%x',crc32($path.Yii::getVersion()));
+	}
+
+	/**
+	 * Generates path segments relative to basePath.
+	 * @param string $file for which public path will be created.
+	 * @param bool $hashByName whether the published directory should be named as the hashed basename.
+	 * @return string path segments without basePath.
+	 * @since 1.1.13
+	 */
+	protected function generatePath($file,$hashByName=false)
+	{
+		if (is_file($file))
+			$pathForHashing=$hashByName ? basename($file) : dirname($file).filemtime($file);
+		else
+			$pathForHashing=$hashByName ? basename($file) : $file.filemtime($file);
+
+		return $this->hash($pathForHashing);
 	}
 }

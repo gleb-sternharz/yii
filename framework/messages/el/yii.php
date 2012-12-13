@@ -15,8 +15,6 @@
  * of the guide for details.
  *
  * NOTE, this file must be saved in UTF-8 encoding.
- *
- * @version $Id: $
  */
 return array (
   'CHttpCacheFilter.lastModified contained a value that could not be understood by strtotime()' => 'Το CHttpCacheFilter.lastModified περιείχε μια τιμή που δεν ήταν δυνατό να καταλάβει η strtotime()',
@@ -253,5 +251,15 @@ return array (
   '{controller} cannot find the requested view "{view}".' => 'Ο ελεγκτής {controller} δεν μπορεί να βρει την καλούμενη όψη "{view}".',
   '{controller} contains improperly nested widget tags in its view "{view}". A {widget} widget does not have an endWidget() call.' => 'Ο ελεγκτής {controller} περιέχει λάθος εμφωλευμένες σημάνσεις widget στην όψη "{view}". Το widget {widget} δεν περιέχει την κλήση endWidget().',
   '{controller} has an extra endWidget({id}) call in its view.' => 'Ο ελεγκτής {controller} έχει μια επιπλέον κλήση endWidget({id}) στην όψη του.',
+  '{n} B' => '',
+  '{n} byte|{n} bytes' => '',
+  '{n} GB' => '',
+  '{n} gigabyte|{n} gigabytes' => '',
+  '{n} KB' => '',
+  '{n} kilobyte|{n} kilobytes' => '',
+  '{n} MB' => '',
+  '{n} megabyte|{n} megabytes' => '',
+  '{n} TB' => '',
+  '{n} terabyte|{n} terabytes' => '',
   '{widget} cannot find the view "{view}".' => 'Το widget {widget} δεν μπορεί να βρει την όψη "{view}".',
 );
